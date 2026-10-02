@@ -10,9 +10,10 @@ interface SidebarProps {
   workspaces: WorkspaceWithRole[];
   currentWorkspaceId: string;
   userEmail: string;
+  userRole?: string;
 }
 
-const navItems = [
+const baseNavItems = [
   { label: "Overview", href: "/dashboard", icon: "📊" },
   { label: "Forecasting", href: "/dashboard/forecasting", icon: "📈" },
   { label: "Workspace Settings", href: "/dashboard/workspace/settings", icon: "⚙️" },
@@ -22,16 +23,27 @@ export function Sidebar({
   workspaces,
   currentWorkspaceId,
   userEmail,
+  userRole,
 }: SidebarProps) {
   const pathname = usePathname();
+
+  const navItems = [...baseNavItems];
+  if (userRole === "admin") {
+    navItems.push({ label: "Admin Panel", href: "/admin", icon: "🛡️" });
+  }
 
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b border-gray-200 px-4 dark:border-gray-800">
+      <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4 dark:border-gray-800">
         <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">
           CRM Dashboard
         </h1>
+        {userRole === "admin" && (
+          <span className="rounded bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+            Admin
+          </span>
+        )}
       </div>
 
       {/* Workspace Switcher */}
@@ -61,7 +73,10 @@ export function Sidebar({
                   }`}
                 >
                   <span className="text-base">{item.icon}</span>
-                  {item.label}
+                  <span>{item.label}</span>
+                  {item.href === "/admin" && (
+                    <span className="ml-auto text-xs opacity-75">★</span>
+                  )}
                 </Link>
               </li>
             );
@@ -71,8 +86,15 @@ export function Sidebar({
 
       {/* User footer */}
       <div className="border-t border-gray-200 p-3 dark:border-gray-800">
-        <div className="mb-2 truncate text-sm text-gray-500 dark:text-gray-400">
-          {userEmail}
+        <div className="mb-2 flex items-center justify-between">
+          <div className="truncate text-sm text-gray-500 dark:text-gray-400">
+            {userEmail}
+          </div>
+          {userRole && (
+            <span className="text-xs uppercase text-gray-400">
+              {userRole}
+            </span>
+          )}
         </div>
         <form action={signOut}>
           <button

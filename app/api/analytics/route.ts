@@ -14,9 +14,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Parse body once before the try block so it's available in the catch fallback
+  let body: { data?: number[]; periods?: number };
   try {
-    const body = await request.json();
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: 'Invalid JSON body' },
+      { status: 400 }
+    );
+  }
 
+  try {
     const response = await fetch(`${AI_SERVICE_URL}/api/forecast`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -36,13 +45,10 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Analytics proxy error:', error);
 
-    // If the AI service is unreachable, return mock data for demo purposes
-    const body = await request
-      .clone()
-      .json()
-      .catch(() => ({ data: [], periods: 6 }));
+    // AI service is unreachable — return mock forecast for demo purposes
     const periods = body.periods || 6;
-    const lastValue = body.data?.[body.data.length - 1] ?? 30000;
+    const historicalData = body.data ?? [];
+    const lastValue = historicalData[historicalData.length - 1] ?? 30000;
 
     const mockForecast = Array.from({ length: periods }, (_, i) => {
       const trend = lastValue * (1 + 0.03 * (i + 1));
@@ -51,7 +57,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      historical: body.data ?? [],
+      historical: historicalData,
       forecast: mockForecast,
       periods,
       model_summary:

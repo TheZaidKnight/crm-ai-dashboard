@@ -1,6 +1,6 @@
 # CRM Dashboard
 
-A production-quality internal and customer relationship management dashboard built with modern web technologies.
+A production-quality, multi-tenant customer relationship management dashboard with AI-powered revenue forecasting.
 
 ## Tech Stack
 
@@ -10,14 +10,24 @@ A production-quality internal and customer relationship management dashboard bui
 | [TypeScript](https://www.typescriptlang.org/) (Strict mode) | Type-safe development with compile-time error checking |
 | [Tailwind CSS v4](https://tailwindcss.com/) | Utility-first CSS framework for responsive design |
 | [Supabase](https://supabase.com/) | PostgreSQL database, authentication, and Row Level Security |
+| [Recharts](https://recharts.org/) | Composable charting library for the forecasting dashboard |
+| [Python / Flask](https://flask.palletsprojects.com/) | AI microservice for TensorFlow-based revenue forecasting |
+| [TensorFlow](https://www.tensorflow.org/) | Machine learning framework for time-series prediction |
 | [Vercel](https://vercel.com/) | Deployment platform (configuration-ready) |
 
 ## Architecture Decisions
 
+### Multi-Tenant Workspaces
+Every user belongs to one or more **workspaces**. Data (customers, revenue) is scoped per-workspace via foreign keys and RLS policies. A default personal workspace is auto-created on signup via a PostgreSQL trigger.
+
+### Role-Based Access Control (RBAC)
+Two levels of roles:
+- **System-level**: `admin` / `customer` on the `profiles` table — admins have full system access
+- **Workspace-level**: `owner` / `admin` / `member` on `workspace_members` — controls who can manage settings and members
+
 ### Route Groups
-The app uses Next.js route groups to separate concerns:
 - `(auth)` — Authentication pages (login, signup, password reset) with a centered card layout
-- `(protected)` — Dashboard and admin pages behind authentication middleware
+- `(protected)` — Dashboard and admin pages behind authentication middleware with a sidebar layout
 
 ### Supabase Client Strategy
 Three separate Supabase client utilities handle the different Next.js rendering contexts:
@@ -25,20 +35,18 @@ Three separate Supabase client utilities handle the different Next.js rendering 
 - **`lib/supabase/server.ts`** — Server client for server components, server actions, and route handlers
 - **`lib/supabase/middleware.ts`** — Middleware-specific client for session refresh and route protection
 
-### Server Actions
-All authentication mutations (sign up, sign in, password reset, sign out) use Next.js Server Actions in `/actions/auth.ts`. This keeps client components thin and avoids custom API routes.
-
-### Row Level Security (RLS)
-The database enforces access control at the PostgreSQL level:
-- Users can read and update their own profile
-- Admins have full CRUD access to all profiles
-- A trigger automatically creates a profile row when a new user signs up
+### AI Microservice Architecture
+A standalone Python/Flask service runs TensorFlow predictions:
+- Next.js API route (`/api/analytics`) acts as an authenticated proxy
+- Flask service (`/ai-service`) trains a small neural network on provided historical data
+- Graceful fallback: if the Flask service is unavailable, mock forecasts are returned
 
 ## Local Development Setup
 
 ### Prerequisites
-- Node.js 18+ 
+- Node.js 18+
 - npm
+- Python 3.9–3.12 (for AI service)
 - A [Supabase](https://supabase.com/) project (free tier works)
 
 ### 1. Clone and install
@@ -61,11 +69,11 @@ Edit `.env.local` with your Supabase credentials:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+AI_SERVICE_URL=http://localhost:5001
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-You can find these values in your Supabase project dashboard under **Settings → API**.
-
-### 3. Run the database migration
+### 3. Run the database migrations
 
 #### Option A: Supabase CLI (Recommended)
 
@@ -77,9 +85,34 @@ npx supabase db push
 
 #### Option B: SQL Editor
 
-Copy the contents of `supabase/migrations/0001_initial_schema.sql` and run it directly in the Supabase Dashboard SQL Editor.
+Run the contents of the migration files in order in the Supabase Dashboard SQL Editor:
+1. `supabase/migrations/0001_initial_schema.sql` (Profiles, auth trigger, basic RLS)
+2. `supabase/migrations/0002_multi_tenant_schema.sql` (Workspaces, members, customers, initial RLS)
+3. `supabase/migrations/0003_fix_workspace_and_admin_rbac.sql` (Workspace RLS fixes, auto-creation backfill, admin helpers)
 
-### 4. Start the development server
+### 4. Admin Account Provisioning
+
+When a user signs up, they receive the `'customer'` role by default. To elevate an account to `'admin'`:
+
+- **Option 1: One-Click UI Claim (Dev/Bootstrap)**: Navigate to `/admin` while logged in. If no admins exist in the system, click the **"Claim Admin Role Now"** button.
+- **Option 2: CLI Script**: Run `npm run set-admin <user-email>` (requires `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`).
+- **Option 3: Supabase SQL Editor**: Run:
+  ```sql
+  UPDATE public.profiles SET role = 'admin' WHERE email = 'your-email@example.com';
+  ```
+- **Option 4: Admin Panel UI**: Once you are an admin, navigate to `/admin` to promote or demote any user via the interactive Users table or the "Grant Admin Role by Email" form.
+
+### 5. Start the AI microservice (optional)
+
+```bash
+cd ai-service
+pip install -r requirements.txt
+python app.py
+```
+
+The service runs on port 5001. The dashboard will use mock forecasts if this service is unavailable.
+
+### 6. Start the development server
 
 ```bash
 npm run dev
@@ -91,37 +124,43 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ```
 ├── app/
-│   ├── (auth)/              # Auth pages (login, signup, reset-password)
-│   ├── (protected)/         # Protected pages (dashboard, admin)
-│   ├── auth/                # Auth API routes (callback, confirm)
-│   ├── layout.tsx           # Root layout
-│   ├── page.tsx             # Root redirect → /login
-│   └── globals.css
+│   ├── (auth)/                          # Auth pages (login, signup, reset-password)
+│   ├── (protected)/
+│   │   ├── layout.tsx                   # Sidebar layout with workspace switcher
+│   │   ├── dashboard/
+│   │   │   ├── page.tsx                 # Workspace overview with stats
+│   │   │   ├── forecasting/page.tsx     # AI-powered revenue forecasting
+│   │   │   └── workspace/settings/      # Member management
+│   │   └── admin/                       # System-wide admin panel
+│   ├── api/analytics/route.ts           # Secure proxy to Flask AI service
+│   └── auth/                            # Auth callback routes
 ├── actions/
-│   └── auth.ts              # Server actions for authentication
+│   ├── auth.ts                          # Auth server actions
+│   └── workspace.ts                     # Workspace CRUD server actions
 ├── components/
-│   └── ui/                  # Reusable UI primitives
-├── lib/
-│   ├── supabase/            # Supabase client utilities
-│   └── utils.ts             # Shared helpers (cn, etc.)
-├── types/
-│   └── database.ts          # TypeScript types for DB schema
-├── supabase/
-│   └── migrations/          # SQL migration files
-├── middleware.ts             # Route protection middleware
-└── .env.example             # Environment variable template
+│   ├── ui/                              # Reusable UI primitives
+│   ├── dashboard/                       # Sidebar, workspace switcher, data table, stats
+│   └── charts/                          # Recharts forecast chart
+├── lib/supabase/                        # Supabase client utilities
+├── types/database.ts                    # Full TypeScript types for DB schema
+├── supabase/migrations/                 # SQL migration files
+├── ai-service/                          # Python Flask AI microservice
+├── middleware.ts                        # Route protection middleware
+└── .env.example                         # Environment variable template
 ```
 
 ## Available Scripts
 
 | Command | Description |
 |---|---|
-| `npm run dev` | Start development server |
+| `npm run dev` | Start Next.js development server |
 | `npm run build` | Build for production |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
+| `cd ai-service && python app.py` | Start AI forecasting microservice |
 
 ## Milestone Progress
 
 - [x] **Milestone 1** — Project initialization, database schema, authentication, middleware
-- [ ] **Milestone 2** — Dashboard views, data tables, analytics widgets
+- [x] **Milestone 2** — Multi-tenant workspaces, dashboard UI, AI forecasting, admin panel
+- [ ] **Milestone 3** — Customer CRUD, advanced analytics, workspace invitations via email

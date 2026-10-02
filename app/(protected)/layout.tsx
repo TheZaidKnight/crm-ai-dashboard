@@ -2,7 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { Sidebar } from "@/components/dashboard/sidebar";
-import type { WorkspaceWithRole, WorkspaceRole } from "@/types/database";
+import { ensureUserWorkspace } from "@/lib/supabase/workspace-provision";
+import type { WorkspaceWithRole, WorkspaceRole, Profile } from "@/types/database";
 
 interface MembershipRow {
   role: WorkspaceRole;
@@ -29,6 +30,13 @@ export default async function ProtectedLayout({
     redirect("/login");
   }
 
+  // Fetch user profile for role and details
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, full_name")
+    .eq("id", user.id)
+    .single<Pick<Profile, "role" | "full_name">>();
+
   // Fetch user's workspaces with their role
   const { data: membershipsRaw } = await supabase
     .from("workspace_members")
@@ -37,12 +45,17 @@ export default async function ProtectedLayout({
 
   const memberships = (membershipsRaw ?? []) as unknown as MembershipRow[];
 
-  const workspaces: WorkspaceWithRole[] = memberships
+  let workspaces: WorkspaceWithRole[] = memberships
     .filter((m) => m.workspaces)
     .map((m) => ({
       ...m.workspaces!,
       workspace_members: [{ role: m.role }],
     }));
+
+  // AUTO-PROVISION: If user has no workspaces (new user or missing setup), create default workspace immediately
+  if (workspaces.length === 0) {
+    workspaces = await ensureUserWorkspace(supabase, user);
+  }
 
   // Determine current workspace from cookie or default to first
   const cookieStore = await cookies();
@@ -58,6 +71,7 @@ export default async function ProtectedLayout({
         workspaces={workspaces}
         currentWorkspaceId={currentWorkspaceId}
         userEmail={user.email ?? ""}
+        userRole={profile?.role}
       />
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

@@ -26,7 +26,7 @@ export async function signUp(
     return { error: 'Password must be at least 6 characters.' };
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -38,6 +38,16 @@ export async function signUp(
 
   if (error) {
     return { error: error.message };
+  }
+
+  // If user object is immediately returned (e.g. email confirmation disabled), auto-provision workspace
+  if (data?.user) {
+    try {
+      const { ensureUserWorkspace } = await import('@/lib/supabase/workspace-provision');
+      await ensureUserWorkspace(supabase, data.user);
+    } catch (wsErr) {
+      console.warn('Auto-provisioning workspace during signup:', wsErr);
+    }
   }
 
   return {

@@ -52,6 +52,18 @@ export async function createWorkspace(
     return { error: memberError.message };
   }
 
+  // Automatically switch to the newly created workspace
+  try {
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    cookieStore.set('workspace_id', workspace.id, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  } catch (err) {
+    console.warn('Cookie setting in createWorkspace:', err);
+  }
+
   revalidatePath('/dashboard');
   return { error: null, success: 'Workspace created successfully.' };
 }

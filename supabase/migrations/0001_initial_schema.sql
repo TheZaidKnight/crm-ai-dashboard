@@ -28,35 +28,35 @@ CREATE POLICY "Users can update own profile"
     USING (auth.uid() = id)
     WITH CHECK (auth.uid() = id);
 
+-- 3b. Helper function to check admin role without triggering RLS recursion
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.profiles
+        WHERE id = auth.uid() AND role = 'admin'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public STABLE;
+
 -- Admins can view all profiles
 CREATE POLICY "Admins can view all profiles"
     ON profiles FOR SELECT
     TO authenticated
-    USING (
-        EXISTS (
-            SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
-        )
-    );
+    USING (public.is_admin());
 
 -- Admins can update all profiles
 CREATE POLICY "Admins can update all profiles"
     ON profiles FOR UPDATE
     TO authenticated
-    USING (
-        EXISTS (
-            SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
-        )
-    );
+    USING (public.is_admin())
+    WITH CHECK (public.is_admin());
 
 -- Admins can delete profiles
 CREATE POLICY "Admins can delete profiles"
     ON profiles FOR DELETE
     TO authenticated
-    USING (
-        EXISTS (
-            SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
-        )
-    );
+    USING (public.is_admin());
 
 -- 5. Create function to handle new user signup
 CREATE OR REPLACE FUNCTION handle_new_user()

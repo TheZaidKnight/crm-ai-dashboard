@@ -56,9 +56,25 @@ CREATE POLICY "Owners can delete workspace" ON workspaces
     USING (EXISTS (SELECT 1 FROM workspace_members WHERE workspace_id = workspaces.id AND user_id = auth.uid() AND role = 'owner'));
 
 -- 1g. RLS policies for workspace_members
+CREATE POLICY "Users can view their own memberships" ON workspace_members
+    FOR SELECT TO authenticated
+    USING (user_id = auth.uid());
+
 CREATE POLICY "Members can view workspace members" ON workspace_members
     FOR SELECT TO authenticated
     USING (EXISTS (SELECT 1 FROM workspace_members wm WHERE wm.workspace_id = workspace_members.workspace_id AND wm.user_id = auth.uid()));
+
+CREATE POLICY "Creators can insert initial workspace membership" ON workspace_members
+    FOR INSERT TO authenticated
+    WITH CHECK (
+        user_id = auth.uid()
+        AND role = 'owner'
+        AND EXISTS (
+            SELECT 1 FROM workspaces w
+            WHERE w.id = workspace_members.workspace_id
+            AND (w.created_by = auth.uid() OR w.created_by IS NULL)
+        )
+    );
 
 CREATE POLICY "Owners and admins can manage members" ON workspace_members
     FOR ALL TO authenticated
@@ -85,18 +101,18 @@ CREATE POLICY "Owners/admins can delete customers" ON customers
 -- 1i. Admin bypass policies
 CREATE POLICY "Admins have full access to workspaces" ON workspaces
     FOR ALL TO authenticated
-    USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'))
-    WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+    USING (public.is_admin())
+    WITH CHECK (public.is_admin());
 
 CREATE POLICY "Admins have full access to workspace_members" ON workspace_members
     FOR ALL TO authenticated
-    USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'))
-    WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+    USING (public.is_admin())
+    WITH CHECK (public.is_admin());
 
 CREATE POLICY "Admins have full access to customers" ON customers
     FOR ALL TO authenticated
-    USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'))
-    WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+    USING (public.is_admin())
+    WITH CHECK (public.is_admin());
 
 -- 1j. Update handle_new_user() function
 CREATE OR REPLACE FUNCTION handle_new_user()
