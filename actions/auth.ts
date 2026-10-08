@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { logAuditEvent } from '@/lib/logger';
 
 export interface AuthResult {
   error: string | null;
@@ -48,6 +49,12 @@ export async function signUp(
     } catch (wsErr) {
       console.warn('Auto-provisioning workspace during signup:', wsErr);
     }
+
+    await logAuditEvent({
+      action: 'USER_SIGNED_UP',
+      userId: data.user.id,
+      details: { email, fullName: fullName || null },
+    });
   }
 
   return {
@@ -111,6 +118,10 @@ export async function resetPassword(
 
 export async function signOut(): Promise<void> {
   const supabase = await createClient();
+
+  await logAuditEvent({
+    action: 'USER_SIGNED_OUT',
+  });
 
   const { error } = await supabase.auth.signOut();
 

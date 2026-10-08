@@ -48,6 +48,7 @@ export default async function AdminPage() {
     { count: totalCustomers },
     { data: allUsers },
     { data: allWorkspaces },
+    { data: allAuditLogs },
   ] = await Promise.all([
     supabase
       .from("profiles")
@@ -66,6 +67,11 @@ export default async function AdminPage() {
       .from("workspaces")
       .select("id, name, created_by, created_at")
       .order("created_at", { ascending: false }),
+    supabase
+      .from("audit_logs")
+      .select("id, workspace_id, user_id, action, details, created_at, profiles(email, full_name), workspaces(name)")
+      .order("created_at", { ascending: false })
+      .limit(100),
   ]);
 
   return (
@@ -80,7 +86,7 @@ export default async function AdminPage() {
           Admin Panel
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          System-wide overview, user management, and workspace administration
+          System-wide overview, user management, workspace administration, and security audit logs
         </p>
       </div>
 
@@ -107,6 +113,7 @@ export default async function AdminPage() {
       <AdminTables
         users={(allUsers ?? []) as Record<string, unknown>[]}
         workspaces={(allWorkspaces ?? []) as Record<string, unknown>[]}
+        auditLogs={(allAuditLogs ?? []) as Record<string, unknown>[]}
         currentUserId={user.id}
       />
     </div>

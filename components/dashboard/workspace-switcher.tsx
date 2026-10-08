@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { createWorkspace } from "@/actions/workspace";
+import { createWorkspace, switchWorkspace } from "@/actions/workspace";
 import type { WorkspaceWithRole } from "@/types/database";
 
 interface WorkspaceSwitcherProps {
@@ -27,8 +27,10 @@ export function WorkspaceSwitcher({
     setIsOpen(false);
     setIsCreating(false);
     setError(null);
-    document.cookie = `workspace_id=${workspaceId};path=/;max-age=${60 * 60 * 24 * 365}`;
-    router.refresh();
+    startTransition(async () => {
+      await switchWorkspace(workspaceId);
+      router.refresh();
+    });
   }
 
   function handleCreate(e: React.FormEvent) {

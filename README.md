@@ -89,6 +89,8 @@ Run the contents of the migration files in order in the Supabase Dashboard SQL E
 1. `supabase/migrations/0001_initial_schema.sql` (Profiles, auth trigger, basic RLS)
 2. `supabase/migrations/0002_multi_tenant_schema.sql` (Workspaces, members, customers, initial RLS)
 3. `supabase/migrations/0003_fix_workspace_and_admin_rbac.sql` (Workspace RLS fixes, auto-creation backfill, admin helpers)
+4. `supabase/migrations/0004_fix_infinite_recursion_rls.sql` (Non-recursive SECURITY DEFINER RLS policies)
+5. `supabase/migrations/0005_audit_logs.sql` (Activity audit logs table, RLS, and performance indexes)
 
 ### 4. Admin Account Provisioning
 
@@ -131,20 +133,28 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 │   │   │   ├── page.tsx                 # Workspace overview with stats
 │   │   │   ├── forecasting/page.tsx     # AI-powered revenue forecasting
 │   │   │   └── workspace/settings/      # Member management
-│   │   └── admin/                       # System-wide admin panel
+│   │   └── admin/                       # System-wide admin panel & audit logs
 │   ├── api/analytics/route.ts           # Secure proxy to Flask AI service
 │   └── auth/                            # Auth callback routes
 ├── actions/
-│   ├── auth.ts                          # Auth server actions
-│   └── workspace.ts                     # Workspace CRUD server actions
+│   ├── auth.ts                          # Auth server actions (with audit logging)
+│   ├── workspace.ts                     # Workspace CRUD server actions (with audit logging)
+│   └── admin.ts                         # Admin role management server actions (with audit logging)
 ├── components/
 │   ├── ui/                              # Reusable UI primitives
 │   ├── dashboard/                       # Sidebar, workspace switcher, data table, stats
 │   └── charts/                          # Recharts forecast chart
-├── lib/supabase/                        # Supabase client utilities
-├── types/database.ts                    # Full TypeScript types for DB schema
-├── supabase/migrations/                 # SQL migration files
+├── lib/
+│   ├── logger.ts                        # Server-side audit logging utility
+│   ├── utils.ts                         # Tailwind class merge helper
+│   └── supabase/                        # Supabase client utilities & auto-provisioning
+├── types/database.ts                    # Full TypeScript types for DB schema & audit logs
+├── supabase/migrations/                 # SQL migration files (0001 - 0005)
 ├── ai-service/                          # Python Flask AI microservice
+├── tests/
+│   ├── unit/                            # Jest unit tests (utils, UI components)
+│   └── e2e/                             # Playwright E2E tests (auth redirect, forms)
+├── .github/workflows/ci.yml             # GitHub Actions CI workflow (lint, test, build)
 ├── middleware.ts                        # Route protection middleware
 └── .env.example                         # Environment variable template
 ```
@@ -156,11 +166,16 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run dev` | Start Next.js development server |
 | `npm run build` | Build for production |
 | `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
+| `npm run lint` | Run ESLint across codebase |
+| `npm test` | Run Jest unit tests |
+| `npm run test:watch` | Run Jest unit tests in watch mode |
+| `npm run test:e2e` | Run Playwright E2E test suite |
+| `npm run set-admin <email>` | Promote user account to admin via CLI |
 | `cd ai-service && python app.py` | Start AI forecasting microservice |
 
-## Milestone Progress
+## Enterprise Maturity & QA
 
-- [x] **Milestone 1** — Project initialization, database schema, authentication, middleware
-- [x] **Milestone 2** — Multi-tenant workspaces, dashboard UI, AI forecasting, admin panel
-- [ ] **Milestone 3** — Customer CRUD, advanced analytics, workspace invitations via email
+- [x] **Activity Audit Logs** — Database-backed audit trail for workspaces, members, roles, and auth actions.
+- [x] **Unit Testing (Jest + RTL)** — Automated unit tests with `@testing-library/react` and `jest-dom`.
+- [x] **E2E Testing (Playwright)** — End-to-end tests covering unauthenticated route protection and login navigation.
+- [x] **CI/CD Pipeline** — GitHub Actions workflow enforcing linting, unit testing, and production build checks on pushes and PRs.

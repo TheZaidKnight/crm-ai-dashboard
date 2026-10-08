@@ -2,7 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import type { WorkspaceRole, Workspace, WorkspaceMember, Profile } from '@/types/database';
+import { logAuditEvent } from '@/lib/logger';
+import type { WorkspaceRole, Workspace, Profile } from '@/types/database';
 
 export interface WorkspaceResult {
   error: string | null;
@@ -64,6 +65,13 @@ export async function createWorkspace(
     console.warn('Cookie setting in createWorkspace:', err);
   }
 
+  await logAuditEvent({
+    action: 'WORKSPACE_CREATED',
+    workspaceId: workspace.id,
+    userId: user.id,
+    details: { name: name.trim() },
+  });
+
   revalidatePath('/dashboard');
   return { error: null, success: 'Workspace created successfully.' };
 }
@@ -114,6 +122,13 @@ export async function inviteMember(
     return { error: error.message };
   }
 
+  await logAuditEvent({
+    action: 'MEMBER_INVITED',
+    workspaceId,
+    userId: user.id,
+    details: { invitedUserId: targetProfile.id, invitedEmail: email, role },
+  });
+
   revalidatePath('/dashboard/workspace/settings');
   return { error: null, success: `Invited ${email} as ${role}.` };
 }
@@ -146,6 +161,13 @@ export async function removeMember(
     return { error: error.message };
   }
 
+  await logAuditEvent({
+    action: 'MEMBER_REMOVED',
+    workspaceId,
+    userId: user.id,
+    details: { removedUserId: userId },
+  });
+
   revalidatePath('/dashboard/workspace/settings');
   return { error: null, success: 'Member removed.' };
 }
@@ -156,6 +178,9 @@ export async function updateMemberRole(
   newRole: WorkspaceRole
 ): Promise<WorkspaceResult> {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { error } = await supabase
     .from('workspace_members')
@@ -167,6 +192,13 @@ export async function updateMemberRole(
     console.error('Update role failed:', error.message);
     return { error: error.message };
   }
+
+  await logAuditEvent({
+    action: 'MEMBER_ROLE_UPDATED',
+    workspaceId,
+    userId: user?.id ?? null,
+    details: { targetUserId: userId, newRole },
+  });
 
   revalidatePath('/dashboard/workspace/settings');
   return { error: null, success: `Role updated to ${newRole}.` };
@@ -186,4 +218,14 @@ export async function getUserWorkspaces() {
     .eq('user_id', user.id);
 
   return data ?? [];
+}
+
+export async function switchWorkspace(workspaceId: string): Promise<void> {
+  const { cookies } = await import('next/headers');
+  const cookieStore = await cookies();
+  cookieStore.set('workspace_id', workspaceId, {
+    path: '/',
+    maxAge: 60 * 60 * 24 * 365,
+  });
+  revalidatePath('/dashboard');
 }

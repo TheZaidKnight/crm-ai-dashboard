@@ -45,6 +45,15 @@ export interface Customer {
   updated_at: string;
 }
 
+export interface AuditLog {
+  id: string;
+  workspace_id: string | null;
+  user_id: string | null;
+  action: string;
+  details: Record<string, unknown>;
+  created_at: string;
+}
+
 // ============================================================
 // Joined / View Types (for UI convenience)
 // ============================================================
@@ -54,6 +63,11 @@ export interface WorkspaceMemberWithProfile extends WorkspaceMember {
 
 export interface WorkspaceWithRole extends Workspace {
   workspace_members: Pick<WorkspaceMember, 'role'>[];
+}
+
+export interface AuditLogWithUserAndWorkspace extends AuditLog {
+  profiles: Pick<Profile, 'email' | 'full_name'> | null;
+  workspaces: Pick<Workspace, 'name'> | null;
 }
 
 // ============================================================
@@ -138,12 +152,42 @@ export interface Database {
           }
         ];
       };
+      audit_logs: {
+        Row: AuditLog;
+        Insert: Omit<AuditLog, 'id' | 'created_at'>;
+        Update: Partial<Omit<AuditLog, 'id' | 'created_at'>>;
+        Relationships: [
+          {
+            foreignKeyName: 'audit_logs_workspace_id_fkey';
+            columns: ['workspace_id'];
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'audit_logs_user_id_fkey';
+            columns: ['user_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      is_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      is_workspace_member: {
+        Args: { lookup_workspace_id: string };
+        Returns: boolean;
+      };
+      is_workspace_admin_or_owner: {
+        Args: { lookup_workspace_id: string };
+        Returns: boolean;
+      };
     };
     Enums: {
       user_role: UserRole;

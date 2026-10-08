@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { logAuditEvent } from '@/lib/logger';
 import type { UserRole, Profile } from '@/types/database';
 
 export interface AdminActionResult {
@@ -46,6 +47,12 @@ export async function updateUserRole(
     console.error('Update user role failed:', error.message);
     return { error: error.message };
   }
+
+  await logAuditEvent({
+    action: 'USER_ROLE_UPDATED',
+    userId: user.id,
+    details: { targetUserId: userId, newRole },
+  });
 
   revalidatePath('/admin');
   return { error: null, success: `User role updated to ${newRole}.` };
@@ -96,6 +103,12 @@ export async function claimInitialAdminRole(): Promise<AdminActionResult> {
     return { error: updateError.message };
   }
 
+  await logAuditEvent({
+    action: 'INITIAL_ADMIN_CLAIMED',
+    userId: user.id,
+    details: { email: user.email },
+  });
+
   revalidatePath('/admin');
   revalidatePath('/dashboard');
   return { error: null, success: 'Congratulations! You are now an Admin.' };
@@ -142,6 +155,12 @@ export async function promoteUserByEmail(
     console.error('Promote user failed:', error.message);
     return { error: error.message };
   }
+
+  await logAuditEvent({
+    action: 'USER_PROMOTED_BY_EMAIL',
+    userId: user.id,
+    details: { promotedEmail: targetEmail.trim().toLowerCase() },
+  });
 
   revalidatePath('/admin');
   return { error: null, success: `User with email ${targetEmail} is now an Admin.` };
