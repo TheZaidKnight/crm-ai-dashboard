@@ -70,12 +70,12 @@ export default function SignUpPage() {
         </Button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+      <div className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
         <p>
           Already have an account?{" "}
           <Link
             href="/login"
-            className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+            className="font-medium text-indigo-600 hover:text-indigo-500 hover:underline dark:text-indigo-400"
           >
             Sign in
           </Link>

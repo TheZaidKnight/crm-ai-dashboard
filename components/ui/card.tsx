@@ -8,7 +8,7 @@ interface CardProps {
 export function Card({ children, className = '' }: CardProps) {
   return (
     <div
-      className={`bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 p-6 sm:p-8 ${className}`}
+      className={`rounded-2xl border border-zinc-200/80 bg-white/85 p-6 sm:p-8 shadow-xs backdrop-blur-md transition-all duration-200 hover:shadow-md hover:border-zinc-300 dark:border-zinc-800/80 dark:bg-zinc-900/85 dark:hover:border-zinc-700 ${className}`}
     >
       {children}
     </div>
@@ -17,7 +17,7 @@ export function Card({ children, className = '' }: CardProps) {
 
 export function CardHeader({ children, className = '' }: CardProps) {
   return (
-    <div className={`space-y-1 mb-6 ${className}`}>
+    <div className={`space-y-1.5 mb-6 ${className}`}>
       {children}
     </div>
   );
@@ -26,7 +26,7 @@ export function CardHeader({ children, className = '' }: CardProps) {
 export function CardTitle({ children, className = '' }: CardProps) {
   return (
     <h2
-      className={`text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 ${className}`}
+      className={`text-xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50 ${className}`}
     >
       {children}
     </h2>
@@ -35,8 +35,25 @@ export function CardTitle({ children, className = '' }: CardProps) {
 
 export function CardDescription({ children, className = '' }: CardProps) {
   return (
-    <p className={`text-sm text-gray-500 dark:text-gray-400 ${className}`}>
+    <p className={`text-sm text-zinc-500 dark:text-zinc-400 ${className}`}>
       {children}
     </p>
   );
 }
+
+export function CardContent({ children, className = '' }: CardProps) {
+  return (
+    <div className={className}>
+      {children}
+    </div>
+  );
+}
+
+export function CardFooter({ children, className = '' }: CardProps) {
+  return (
+    <div className={`mt-6 flex items-center ${className}`}>
+      {children}
+    </div>
+  );
+}
+

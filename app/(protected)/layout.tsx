@@ -66,7 +66,7 @@ export default async function ProtectedLayout({
     "";
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex min-h-screen bg-zinc-50/70 dark:bg-zinc-950">
       <Sidebar
         workspaces={workspaces}
         currentWorkspaceId={currentWorkspaceId}
@@ -74,7 +74,7 @@ export default async function ProtectedLayout({
         userRole={profile?.role}
       />
       <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-6 py-10 sm:px-8 lg:px-12">
           {children}
         </div>
       </main>

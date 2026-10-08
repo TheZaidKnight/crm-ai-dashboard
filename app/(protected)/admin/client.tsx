@@ -69,10 +69,10 @@ export function AdminTables({
         const role = String(value);
         const styles =
           role === "admin"
-            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-            : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+            ? "bg-indigo-100 text-indigo-800 border border-indigo-200/60 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-900/50"
+            : "bg-zinc-100 text-zinc-700 border border-zinc-200/60 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700/50";
         return (
-          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium uppercase ${styles}`}>
+          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider ${styles}`}>
             {role}
           </span>
         );
@@ -99,7 +99,7 @@ export function AdminTables({
 
         if (isSelf) {
           return (
-            <span className="text-xs italic text-gray-400">
+            <span className="text-xs italic text-zinc-400">
               Current Admin (You)
             </span>
           );
@@ -110,10 +110,10 @@ export function AdminTables({
             type="button"
             disabled={isPendingThis}
             onClick={() => handleToggleRole(userId, role)}
-            className={`rounded px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
+            className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all duration-200 disabled:opacity-50 ${
               role === "admin"
-                ? "border border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-900/20"
-                : "border border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-400 dark:hover:bg-purple-900/20"
+                ? "border border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-800/80 dark:text-amber-400 dark:hover:bg-amber-950/30"
+                : "border border-indigo-300 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800/80 dark:text-indigo-300 dark:hover:bg-indigo-950/30"
             }`}
           >
             {isPendingThis
@@ -145,15 +145,15 @@ export function AdminTables({
   // Helper for audit action badge styles
   function getActionBadgeStyle(action: string) {
     if (action.includes("ROLE") || action.includes("ADMIN")) {
-      return "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200";
+      return "bg-indigo-100 text-indigo-800 border-indigo-200/80 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-900/50";
     }
     if (action.includes("CREATED") || action.includes("INVITED") || action.includes("SIGNED_UP")) {
-      return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200";
+      return "bg-emerald-100 text-emerald-800 border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-900/50";
     }
     if (action.includes("REMOVED") || action.includes("DELETED") || action.includes("SIGNED_OUT")) {
-      return "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 border-rose-200";
+      return "bg-rose-100 text-rose-800 border-rose-200/80 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-900/50";
     }
-    return "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border-blue-200";
+    return "bg-sky-100 text-sky-800 border-sky-200/80 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-900/50";
   }
 
 interface ProcessedAuditLog extends Record<string, unknown> {
@@ -210,10 +210,10 @@ interface ProcessedAuditLog extends Record<string, unknown> {
         const d = new Date(String(value));
         return (
           <div className="flex flex-col text-xs">
-            <span className="font-medium text-gray-900 dark:text-gray-100">
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">
               {d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
             </span>
-            <span className="text-gray-500 dark:text-gray-400">
+            <span className="text-zinc-500 dark:text-zinc-400">
               {d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
             </span>
           </div>
@@ -239,11 +239,11 @@ interface ProcessedAuditLog extends Record<string, unknown> {
         const profiles = row.profiles;
         return (
           <div className="flex flex-col text-xs">
-            <span className="font-medium text-gray-900 dark:text-gray-100">
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">
               {profiles?.email || "System / Automated"}
             </span>
             {profiles?.full_name && (
-              <span className="text-gray-500 dark:text-gray-400">{profiles.full_name}</span>
+              <span className="text-zinc-500 dark:text-zinc-400">{profiles.full_name}</span>
             )}
           </div>
         );
@@ -255,7 +255,7 @@ interface ProcessedAuditLog extends Record<string, unknown> {
       render: (_: unknown, row: ProcessedAuditLog) => {
         const workspaces = row.workspaces;
         return (
-          <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
             {workspaces?.name || (row.workspace_id ? "Workspace" : "Global System")}
           </span>
         );
@@ -268,17 +268,17 @@ interface ProcessedAuditLog extends Record<string, unknown> {
         const details = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
         const keys = Object.keys(details);
         if (keys.length === 0) {
-          return <span className="text-xs text-gray-400">—</span>;
+          return <span className="text-xs text-zinc-400">—</span>;
         }
 
         return (
           <button
             type="button"
             onClick={() => setSelectedLogDetails(details)}
-            className="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 font-mono text-[11px] text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 font-mono text-[11px] text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
           >
             <span>{keys.length} field{keys.length > 1 ? "s" : ""}</span>
-            <span className="text-[10px] text-blue-500">🔍 view</span>
+            <span className="text-[10px] text-indigo-500">🔍 view</span>
           </button>
         );
       },
@@ -320,7 +320,7 @@ interface ProcessedAuditLog extends Record<string, unknown> {
               type="submit"
               isLoading={isPromoting}
               size="md"
-              className="bg-purple-600 hover:bg-purple-700 sm:w-auto"
+              className="sm:w-auto"
             >
               Make Admin
             </Button>
@@ -334,7 +334,7 @@ interface ProcessedAuditLog extends Record<string, unknown> {
         {tableSuccess && <Alert variant="success">{tableSuccess}</Alert>}
 
         {/* Tabs */}
-        <div className="flex gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900">
+        <div className="flex gap-1.5 rounded-xl border border-zinc-200/80 bg-zinc-100/70 p-1.5 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/60">
           {(["users", "workspaces", "audit-logs"] as Tab[]).map((tab) => {
             const count =
               tab === "users"
@@ -355,10 +355,10 @@ interface ProcessedAuditLog extends Record<string, unknown> {
                 key={tab}
                 type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
                   activeTab === tab
-                    ? "bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-100"
-                    : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                    ? "bg-white font-semibold text-zinc-900 shadow-xs dark:bg-zinc-800 dark:text-zinc-50"
+                    : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
                 }`}
               >
                 {label} ({count})
@@ -370,7 +370,7 @@ interface ProcessedAuditLog extends Record<string, unknown> {
         {/* Action filter pills for Audit Logs */}
         {activeTab === "audit-logs" && (
           <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-            <span className="font-medium text-gray-500 dark:text-gray-400">Action Filter:</span>
+            <span className="font-semibold text-zinc-500 dark:text-zinc-400">Action Filter:</span>
             {[
               { id: "ALL", label: "All Events" },
               { id: "WORKSPACE", label: "Workspaces" },
@@ -382,10 +382,10 @@ interface ProcessedAuditLog extends Record<string, unknown> {
                 key={f.id}
                 type="button"
                 onClick={() => setActionFilter(f.id)}
-                className={`rounded-full px-3 py-1 font-medium transition-colors ${
+                className={`rounded-full px-3 py-1 font-semibold transition-all duration-200 ${
                   actionFilter === f.id
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                    ? "bg-indigo-600 text-white shadow-xs"
+                    : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200/80 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700/80"
                 }`}
               >
                 {f.label}
@@ -426,21 +426,21 @@ interface ProcessedAuditLog extends Record<string, unknown> {
 
       {/* Audit Log Details Modal */}
       {selectedLogDetails && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white/95 p-6 shadow-2xl backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-900/95">
             <div className="flex items-center justify-between pb-3">
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
                 Audit Event Metadata Details
               </h3>
               <button
                 type="button"
                 onClick={() => setSelectedLogDetails(null)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
               >
                 ✕
               </button>
             </div>
-            <pre className="max-h-80 overflow-auto rounded-lg bg-gray-950 p-4 font-mono text-xs text-emerald-400">
+            <pre className="max-h-80 overflow-auto rounded-xl bg-zinc-950 p-4 font-mono text-xs text-emerald-400">
               {JSON.stringify(selectedLogDetails, null, 2)}
             </pre>
             <div className="mt-4 flex justify-end">

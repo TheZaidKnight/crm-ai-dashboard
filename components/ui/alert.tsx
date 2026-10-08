@@ -7,19 +7,33 @@ interface AlertProps {
 }
 
 const variantStyles = {
-  success: 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800',
-  error: 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800',
-  info: 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
-  warning: 'bg-yellow-50 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800',
+  success:
+    'bg-emerald-50/90 text-emerald-900 border-emerald-200/80 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800/60',
+  error:
+    'bg-rose-50/90 text-rose-900 border-rose-200/80 dark:bg-rose-950/30 dark:text-rose-300 dark:border-rose-800/60',
+  info:
+    'bg-indigo-50/90 text-indigo-900 border-indigo-200/80 dark:bg-indigo-950/30 dark:text-indigo-300 dark:border-indigo-800/60',
+  warning:
+    'bg-amber-50/90 text-amber-900 border-amber-200/80 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800/60',
+};
+
+const variantIcons = {
+  success: '✓',
+  error: '⚠',
+  info: 'ℹ',
+  warning: '!',
 };
 
 export function Alert({ children, variant = 'info', className = '' }: AlertProps) {
   return (
     <div
-      className={`rounded-lg border px-4 py-3 text-sm ${variantStyles[variant]} ${className}`}
+      className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm shadow-xs backdrop-blur-sm transition-all duration-200 ${variantStyles[variant]} ${className}`}
       role="alert"
     >
-      {children}
+      <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-xs font-bold opacity-80">
+        {variantIcons[variant]}
+      </span>
+      <div className="flex-1 leading-relaxed">{children}</div>
     </div>
   );
 }

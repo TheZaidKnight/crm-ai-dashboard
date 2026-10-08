@@ -77,15 +77,14 @@ export default async function AdminPage() {
   return (
     <div className="space-y-8">
       <div>
-        <div className="flex items-center gap-2">
-          <span className="rounded bg-purple-100 px-2.5 py-0.5 text-xs font-semibold uppercase text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
-            System Administration
-          </span>
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200/60 bg-indigo-50/70 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-300">
+          <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
+          System Administration
         </div>
-        <h2 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
-          Admin Panel
+        <h2 className="mt-2 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Admin Control Center
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
           System-wide overview, user management, workspace administration, and security audit logs
         </p>
       </div>

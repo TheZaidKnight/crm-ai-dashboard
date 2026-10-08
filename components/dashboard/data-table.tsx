@@ -47,21 +47,21 @@ export function DataTable<T extends Record<string, unknown>>({
 
   return (
     <div className="space-y-4">
-      {/* Search */}
+      {/* Search Bar */}
       {searchableKeys.length > 0 && (
         <div className="relative">
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Search records..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 pl-10 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+            className="w-full rounded-xl border border-zinc-200/90 bg-white/90 py-2.5 pl-10 pr-4 text-sm text-zinc-900 shadow-2xs backdrop-blur-xs placeholder:text-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 transition-all duration-200"
           />
           <svg
-            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+            className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -76,27 +76,27 @@ export function DataTable<T extends Record<string, unknown>>({
         </div>
       )}
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800">
+      {/* Table Container */}
+      <div className="overflow-x-auto rounded-2xl border border-zinc-200/80 bg-white/80 shadow-xs backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-900/80">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
+          <thead className="border-b border-zinc-200/80 bg-zinc-50/70 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:border-zinc-800/80 dark:bg-zinc-950/50 dark:text-zinc-400">
             <tr>
               {columns.map((col) => (
                 <th
                   key={String(col.key)}
-                  className="px-4 py-3 font-medium text-gray-500 dark:text-gray-400"
+                  className="px-4 py-3.5 font-semibold"
                 >
                   {col.label}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-800 dark:bg-gray-900">
+          <tbody className="divide-y divide-zinc-200/60 dark:divide-zinc-800/60">
             {paginated.length === 0 ? (
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-8 text-center text-gray-500 dark:text-gray-400"
+                  className="px-4 py-10 text-center text-sm text-zinc-500 dark:text-zinc-400"
                 >
                   {emptyMessage}
                 </td>
@@ -105,12 +105,12 @@ export function DataTable<T extends Record<string, unknown>>({
               paginated.map((row, i) => (
                 <tr
                   key={i}
-                  className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                  className="transition-colors duration-150 hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40"
                 >
                   {columns.map((col) => (
                     <td
                       key={String(col.key)}
-                      className="px-4 py-3 text-gray-900 dark:text-gray-100"
+                      className="px-4 py-3 text-zinc-900 dark:text-zinc-100"
                     >
                       {col.render
                         ? col.render(row[col.key], row)
@@ -124,20 +124,20 @@ export function DataTable<T extends Record<string, unknown>>({
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* Pagination Footer */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 px-1">
           <span>
-            Showing {(safeCurrentPage - 1) * pageSize + 1}–
-            {Math.min(safeCurrentPage * pageSize, filtered.length)} of{" "}
-            {filtered.length}
+            Showing <strong className="text-zinc-700 dark:text-zinc-300">{(safeCurrentPage - 1) * pageSize + 1}</strong>–
+            <strong className="text-zinc-700 dark:text-zinc-300">{Math.min(safeCurrentPage * pageSize, filtered.length)}</strong> of{" "}
+            <strong className="text-zinc-700 dark:text-zinc-300">{filtered.length}</strong>
           </span>
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             <button
               type="button"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={safeCurrentPage === 1}
-              className="rounded-lg px-3 py-1 transition-colors hover:bg-gray-100 disabled:opacity-50 dark:hover:bg-gray-800"
+              className="rounded-xl border border-zinc-200/80 bg-white/80 px-3 py-1.5 font-medium text-zinc-700 shadow-2xs transition-all duration-200 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               Previous
             </button>
@@ -147,7 +147,7 @@ export function DataTable<T extends Record<string, unknown>>({
                 setCurrentPage((p) => Math.min(totalPages, p + 1))
               }
               disabled={safeCurrentPage === totalPages}
-              className="rounded-lg px-3 py-1 transition-colors hover:bg-gray-100 disabled:opacity-50 dark:hover:bg-gray-800"
+              className="rounded-xl border border-zinc-200/80 bg-white/80 px-3 py-1.5 font-medium text-zinc-700 shadow-2xs transition-all duration-200 hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               Next
             </button>

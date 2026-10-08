@@ -19,11 +19,11 @@ const initialState: WorkspaceResult = { error: null };
 
 const roleBadgeStyles: Record<string, string> = {
   owner:
-    "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+    "bg-indigo-100 text-indigo-800 border border-indigo-200/60 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-900/50",
   admin:
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+    "bg-violet-100 text-violet-800 border border-violet-200/60 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-900/50",
   member:
-    "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+    "bg-zinc-100 text-zinc-700 border border-zinc-200/60 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700/50",
 };
 
 export function WorkspaceSettingsClient({
@@ -64,23 +64,23 @@ export function WorkspaceSettingsClient({
           </Alert>
         )}
 
-        <div className="divide-y divide-gray-200 dark:divide-gray-800">
+        <div className="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
           {members.map((member) => (
             <div
               key={member.id}
-              className="flex items-center justify-between px-6 py-4 sm:px-8"
+              className="flex items-center justify-between px-6 py-4.5 sm:px-8 transition-colors duration-150 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
                   {member.profiles?.full_name || "Unnamed User"}
                 </p>
-                <p className="truncate text-sm text-gray-500 dark:text-gray-400">
+                <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
                   {member.profiles?.email}
                 </p>
               </div>
               <div className="flex items-center gap-3">
                 <span
-                  className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${roleBadgeStyles[member.role] ?? roleBadgeStyles.member}`}
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider ${roleBadgeStyles[member.role] ?? roleBadgeStyles.member}`}
                 >
                   {member.role}
                 </span>
@@ -91,7 +91,7 @@ export function WorkspaceSettingsClient({
                       type="button"
                       onClick={() => handleRemove(member.user_id)}
                       disabled={isPending}
-                      className="text-sm text-red-600 hover:text-red-500 disabled:opacity-50 dark:text-red-400"
+                      className="text-xs font-semibold text-rose-600 hover:text-rose-700 disabled:opacity-50 dark:text-rose-400 hover:underline transition-all"
                     >
                       Remove
                     </button>
@@ -100,7 +100,7 @@ export function WorkspaceSettingsClient({
             </div>
           ))}
           {members.length === 0 && (
-            <div className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            <div className="px-6 py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
               No members found.
             </div>
           )}
@@ -140,10 +140,10 @@ export function WorkspaceSettingsClient({
                 required
                 disabled={isInviting}
               />
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label
                   htmlFor="role"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300"
                 >
                   Role
                 </label>
@@ -152,7 +152,7 @@ export function WorkspaceSettingsClient({
                   name="role"
                   defaultValue="member"
                   disabled={isInviting}
-                  className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                  className="block w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-3.5 py-2.5 text-sm text-zinc-900 shadow-xs transition-all duration-200 focus:border-indigo-500 focus:bg-white focus:outline-hidden focus:ring-3 focus:ring-indigo-500/15 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-100 dark:focus:bg-zinc-900"
                 >
                   <option value="member">Member</option>
                   <option value="admin">Admin</option>

@@ -9,11 +9,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, className = '', id, ...props }, ref) => {
     const inputId = id || props.name;
     return (
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300"
           >
             {label}
           </label>
@@ -21,15 +21,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           id={inputId}
-          className={`block w-full rounded-lg border px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
+          className={`block w-full rounded-xl border px-3.5 py-2.5 text-sm shadow-xs transition-all duration-200 placeholder:text-zinc-400 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed ${
             error
-              ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-              : 'border-gray-300 dark:border-gray-600'
-          } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${className}`}
+              ? 'border-rose-500 text-rose-900 focus:ring-rose-500/15 focus:border-rose-500 dark:border-rose-500 dark:text-rose-200'
+              : 'border-zinc-200 bg-white/90 text-zinc-900 focus:border-indigo-500 focus:ring-indigo-500/15 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-100 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20'
+          } ${className}`}
           {...props}
         />
         {error && (
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <p className="text-xs font-medium text-rose-600 dark:text-rose-400">{error}</p>
         )}
       </div>
     );

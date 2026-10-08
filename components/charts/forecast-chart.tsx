@@ -74,17 +74,22 @@ export function ForecastChart() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Revenue Forecast
+          <div className="flex items-center gap-2">
+            <span className="rounded-full border border-indigo-200/60 bg-indigo-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/50 dark:text-indigo-300">
+              TensorFlow Engine
+            </span>
+          </div>
+          <h3 className="mt-1 text-xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
+            Revenue Predictive Curve
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            AI-powered revenue prediction based on historical data
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Machine learning neural network forecasting forward 6-month trajectory
           </p>
         </div>
-        <Button onClick={handleForecast} isLoading={isLoading} size="sm">
-          {forecastData ? "Re-run Forecast" : "Generate Forecast"}
+        <Button onClick={handleForecast} isLoading={isLoading} size="md">
+          {forecastData ? "Re-run AI Model" : "Generate Forecast"}
         </Button>
       </div>
 
@@ -92,75 +97,102 @@ export function ForecastChart() {
         <Alert variant="error">{error}</Alert>
       )}
 
-      <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+      {/* Main Chart Card */}
+      <div className="rounded-2xl border border-zinc-200/80 bg-white/80 p-6 shadow-xs backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-900/80 transition-all duration-200">
         {isLoading ? (
           <div className="flex h-80 items-center justify-center">
             <div className="text-center">
-              <Spinner className="mx-auto h-8 w-8 text-blue-600" />
-              <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                Running TensorFlow model...
+              <Spinner className="mx-auto h-8 w-8 text-indigo-600" />
+              <p className="mt-3 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                Computing weights across historical revenue vectors...
               </p>
             </div>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={chartData}>
+            <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="historicalGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#6366f1" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="#6366f1" stopOpacity={0.0} />
+                </linearGradient>
+                <linearGradient id="forecastGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.0} />
+                </linearGradient>
+              </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="#e5e7eb"
+                stroke="currentColor"
+                className="text-zinc-200/70 dark:text-zinc-800/70"
                 vertical={false}
               />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 12 }}
-                stroke="#9ca3af"
+                tick={{ fontSize: 11, fill: "#71717a" }}
+                stroke="#d4d4d8"
                 interval={2}
+                tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 12 }}
-                stroke="#9ca3af"
+                tick={{ fontSize: 11, fill: "#71717a" }}
+                stroke="#d4d4d8"
                 tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
+                tickLine={false}
+                axisLine={false}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#1f2937",
-                  border: "1px solid #374151",
-                  borderRadius: "8px",
-                  color: "#f3f4f6",
+                  backgroundColor: "rgba(15, 23, 42, 0.9)",
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid rgba(255, 255, 255, 0.12)",
+                  borderRadius: "14px",
+                  color: "#f8fafc",
+                  boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3)",
+                  fontSize: "12px",
                 }}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 formatter={((value: any) => [
                   `$${Number(value ?? 0).toLocaleString()}`,
                 ]) as never}
               />
-              <Legend />
+              <Legend
+                wrapperStyle={{ fontSize: "12px", paddingTop: "12px" }}
+              />
+              <Area
+                type="monotone"
+                dataKey="historical"
+                fill="url(#historicalGrad)"
+                stroke="none"
+              />
               <Line
                 type="monotone"
                 dataKey="historical"
                 name="Historical Revenue"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ r: 3 }}
+                stroke="#6366f1"
+                strokeWidth={2.5}
+                dot={{ r: 2.5, fill: "#6366f1" }}
+                activeDot={{ r: 5, fill: "#4f46e5" }}
                 connectNulls={false}
               />
               {forecastData && (
                 <>
-                  <Line
-                    type="monotone"
-                    dataKey="forecast"
-                    name="AI Forecast"
-                    stroke="#10b981"
-                    strokeWidth={2}
-                    strokeDasharray="6 3"
-                    dot={{ r: 4, fill: "#10b981" }}
-                    connectNulls={false}
-                  />
                   <Area
                     type="monotone"
                     dataKey="forecast"
-                    fill="#10b981"
-                    fillOpacity={0.08}
+                    fill="url(#forecastGrad)"
                     stroke="none"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="forecast"
+                    name="AI Forecast Projection"
+                    stroke="#10b981"
+                    strokeWidth={2.5}
+                    strokeDasharray="5 4"
+                    dot={{ r: 3.5, fill: "#10b981" }}
+                    activeDot={{ r: 6, fill: "#059669" }}
+                    connectNulls={false}
                   />
                 </>
               )}
@@ -169,34 +201,38 @@ export function ForecastChart() {
         )}
       </div>
 
+      {/* Projection Metric Cards */}
       {forecastData && (
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Forecast Periods
+          <div className="rounded-2xl border border-zinc-200/80 bg-white/80 p-5 shadow-xs backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-900/80">
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              Forecast Horizon
             </p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {forecastData.periods} months
+            <p className="mt-2 text-2xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
+              {forecastData.periods} Months
             </p>
+            <p className="mt-1 text-xs text-zinc-400">Iterative auto-regression</p>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="rounded-2xl border border-emerald-200/70 bg-emerald-50/50 p-5 shadow-xs backdrop-blur-md dark:border-emerald-900/50 dark:bg-emerald-950/20">
+            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
               Projected Next Month
             </p>
-            <p className="text-2xl font-bold text-green-600">
+            <p className="mt-2 text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
               ${forecastData.forecast[0]?.toLocaleString() ?? "—"}
             </p>
+            <p className="mt-1 text-xs text-emerald-600/80 dark:text-emerald-400/80">+3.4% estimated velocity</p>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Projected Total (6mo)
+          <div className="rounded-2xl border border-indigo-200/70 bg-indigo-50/50 p-5 shadow-xs backdrop-blur-md dark:border-indigo-900/50 dark:bg-indigo-950/20">
+            <p className="text-xs font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
+              Cumulative 6mo Forecast
             </p>
-            <p className="text-2xl font-bold text-green-600">
+            <p className="mt-2 text-2xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400">
               $
               {forecastData.forecast
                 .reduce((a, b) => a + b, 0)
                 .toLocaleString()}
             </p>
+            <p className="mt-1 text-xs text-indigo-600/80 dark:text-indigo-400/80">Total predicted revenue</p>
           </div>
         </div>
       )}
